@@ -2,3 +2,4 @@ Django>=1.8
 pytz
 psycopg2
 django-outpost
+websockets
