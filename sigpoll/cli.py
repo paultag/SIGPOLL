@@ -22,10 +22,9 @@ def lines(s):
             chunk, data = data.split("\n", 1)
             yield chunk
 
-django.setup()
-outpost.sync(host='localhost', port=2017)
-
-for line in lines(s):
-    print("Loaded: ", *import_sbs(line, dedupe=True))
-
-s.close()
+def daemon():
+    django.setup()
+    outpost.sync(host='localhost', port=2017)
+    for line in lines(s):
+        print("Loaded: ", *import_sbs(line, dedupe=True))
+    s.close()
