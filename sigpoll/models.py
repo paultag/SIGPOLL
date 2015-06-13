@@ -14,6 +14,12 @@ class CallsignReport(SyncableModel):
     callsign = models.CharField(max_length=8)
     aircraft = models.ForeignKey('Aircraft', related_name='callsigns', db_index=True)
 
+    def is_dupe(self):
+        callsign = self.aircraft.last_known_callsign
+        if callsign is None:
+            return False
+        return self.callsign == callsign.callsign
+
     def __repr__(self):
         return "<CallsignReport: callsign={} aircraft={}>".format(
             self.callsign,
@@ -27,6 +33,12 @@ class SquawkReport(SyncableModel):
 
     code = models.CharField(max_length=4)
     aircraft = models.ForeignKey('Aircraft', related_name='squawks', db_index=True)
+
+    def is_dupe(self):
+        squawk = self.aircraft.last_known_squawk
+        if squawk is None:
+            return False
+        return self.code == squawk.code
 
     def __repr__(self):
         return "<SquawkReport: code={} aircraft={}>".format(
@@ -44,6 +56,12 @@ class AltitudeReport(SyncableModel):
     altitude = models.IntegerField()
     aircraft = models.ForeignKey('Aircraft', related_name='altitudes', db_index=True)
 
+    def is_dupe(self):
+        altitude = self.aircraft.last_known_altitude
+        if altitude is None:
+            return False
+        return self.altitude == altitude.altitude
+
     def __repr__(self):
         return "<AltitudeReport: altitude={} aircraft={}>".format(
             self.altitude,
@@ -60,6 +78,13 @@ class HeadingReport(SyncableModel):
     speed = models.IntegerField()
     heading = models.IntegerField()
     aircraft = models.ForeignKey('Aircraft', related_name='headings', db_index=True)
+
+    def is_dupe(self):
+        heading = self.aircraft.last_known_heading
+        if heading is None:
+            return False
+        return (self.speed == heading.speed and
+                self.heading == heading.heading)
 
     def __repr__(self):
         return "<HeadingReport: speed={} heading={} aircraft={}>".format(
@@ -80,6 +105,14 @@ class LocationReport(SyncableModel):
     longitude = models.FloatField()
     ground = models.BooleanField(db_index=True)
     aircraft = models.ForeignKey('Aircraft', related_name='locations', db_index=True)
+
+    def is_dupe(self):
+        location = self.aircraft.last_known_location
+        if location is None:
+            return False
+        return (self.latitude == location.latitude and
+                self.longitude == location.longitude and
+                self.ground == location.ground)
 
     def __repr__(self):
         return "<LocationReport: lat={} lon={} aircraft={}>".format(
@@ -168,11 +201,30 @@ class Aircraft(models.Model):
             locations__when__gte=minute_ago
         ).distinct()
 
-    @property
-    def last_known_location(self):
-        els = self.locations.order_by('-when')
+    def _last_known(self, model):
+        els = model.order_by('-when')
         if els:
             return els[0]
+
+    @property
+    def last_known_location(self):
+        return self._last_known(self.locations)
+
+    @property
+    def last_known_altitude(self):
+        return self._last_known(self.altitudes)
+
+    @property
+    def last_known_squawk(self):
+        return self._last_known(self.squawks)
+
+    @property
+    def last_known_callsign(self):
+        return self._last_known(self.callsigns)
+
+    @property
+    def last_known_heading(self):
+        return self._last_known(self.headings)
 
     def __repr__(self):
         return "<Aircraft: {}>".format(self.name)
