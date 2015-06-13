@@ -1,4 +1,5 @@
 from sigpoll.parser import import_sbs
+import outpost
 
 import socket
 import sys
@@ -19,6 +20,8 @@ def lines(s):
         while "\n" in data:
             chunk, data = data.split("\n", 1)
             yield chunk
+
+outpost.sync(host='localhost', port=2017)
 
 for line in lines(s):
     print(import_sbs(line))

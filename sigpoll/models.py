@@ -1,11 +1,18 @@
 from django.db import models
+from outpost.models import SyncableModel
 import datetime as dt
 
 
-class CallsignReport(models.Model):
+class CallsignReport(SyncableModel):
+    class Meta:
+        index_together = [
+            ['when', 'aircraft'],
+            ['when', 'callsign'],
+            ['callsign', 'aircraft'],
+        ]
+
     callsign = models.CharField(max_length=8)
-    when = models.DateTimeField()
-    aircraft = models.ForeignKey('Aircraft', related_name='callsigns')
+    aircraft = models.ForeignKey('Aircraft', related_name='callsigns', db_index=True)
 
     def __repr__(self):
         return "<CallsignReport: callsign={} aircraft={}>".format(
@@ -14,10 +21,12 @@ class CallsignReport(models.Model):
         )
 
 
-class SquawkReport(models.Model):
+class SquawkReport(SyncableModel):
+    class Meta:
+        index_together = ['when', 'aircraft']
+
     code = models.CharField(max_length=4)
-    when = models.DateTimeField()
-    aircraft = models.ForeignKey('Aircraft', related_name='squawks')
+    aircraft = models.ForeignKey('Aircraft', related_name='squawks', db_index=True)
 
     def __repr__(self):
         return "<SquawkReport: code={} aircraft={}>".format(
@@ -26,10 +35,14 @@ class SquawkReport(models.Model):
         )
 
 
-class AltitudeReport(models.Model):
+class AltitudeReport(SyncableModel):
+    class Meta:
+        index_together = [
+            ['when', 'aircraft'],
+        ]
+
     altitude = models.IntegerField()
-    when = models.DateTimeField()
-    aircraft = models.ForeignKey('Aircraft', related_name='altitudes')
+    aircraft = models.ForeignKey('Aircraft', related_name='altitudes', db_index=True)
 
     def __repr__(self):
         return "<AltitudeReport: altitude={} aircraft={}>".format(
@@ -38,11 +51,15 @@ class AltitudeReport(models.Model):
         )
 
 
-class HeadingReport(models.Model):
+class HeadingReport(SyncableModel):
+    class Meta:
+        index_together = [
+            ['when', 'aircraft'],
+        ]
+
     speed = models.IntegerField()
     heading = models.IntegerField()
-    when = models.DateTimeField()
-    aircraft = models.ForeignKey('Aircraft', related_name='headings')
+    aircraft = models.ForeignKey('Aircraft', related_name='headings', db_index=True)
 
     def __repr__(self):
         return "<HeadingReport: speed={} heading={} aircraft={}>".format(
@@ -52,12 +69,17 @@ class HeadingReport(models.Model):
         )
 
 
-class LocationReport(models.Model):
+class LocationReport(SyncableModel):
+    class Meta:
+        index_together = [
+            ['when', 'aircraft'],
+            ['ground', 'aircraft'],
+        ]
+
     latitude = models.FloatField()
     longitude = models.FloatField()
-    ground = models.BooleanField()
-    when = models.DateTimeField()
-    aircraft = models.ForeignKey('Aircraft', related_name='locations')
+    ground = models.BooleanField(db_index=True)
+    aircraft = models.ForeignKey('Aircraft', related_name='locations', db_index=True)
 
     def __repr__(self):
         return "<LocationReport: lat={} lon={} aircraft={}>".format(
@@ -109,8 +131,8 @@ AIRCRAFT_REGISTRANT_TYPE = (
 class Aircraft(models.Model):
 
     id = models.CharField(max_length=6, primary_key=True)
-    model = models.ForeignKey('Model', null=True)
-    tail_number = models.CharField(max_length=32, blank=True)
+    model = models.ForeignKey('Model', null=True, db_index=True)
+    tail_number = models.CharField(max_length=32, blank=True, db_index=True)
 
     type = models.CharField(max_length=4, choices=AIRCRAFT_TYPES)
     status = models.CharField(max_length=4)

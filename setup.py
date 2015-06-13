@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 from sigpoll import __appname__, __version__
-from setuptools import setup
+from setuptools import setup, find_packages
 
 long_description = ""
 
 setup(
     name=__appname__,
     version=__version__,
-    packages=['sigpoll',],
+    packages=find_packages(),
 
     author="Paul Tagliamonte",
     author_email="tag@pault.ag",

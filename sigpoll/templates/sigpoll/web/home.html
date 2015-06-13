@@ -9,20 +9,32 @@
     <link href='https://api.tiles.mapbox.com/mapbox.js/v1.6.4/mapbox.css' rel='stylesheet' />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <style>
-        body { margin:0; padding:0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
+body {
+    margin:  0;
+    padding: 0;
+}
+
+#map {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    top: 0px;
+    width:    100%;
+}
     </style>
 {% endblock %}
 
 {% block content %}
     <div id='map'></div>
 <script>
-var layers = {}
+var trackLayers = {}
+  , pointLayers = {}
   , map = L.mapbox.map('map', 'examples.map-i86nkdio').setView([38.85, -77.03], 10);
 
 
 function updateAircraft(hexId) {
-    function addLayer(data) {
+    function addLayer(layers, data) {
         var layer = L.geoJson(data);
         layer.addTo(map);
         if (hexId in layers) {
@@ -33,8 +45,13 @@ function updateAircraft(hexId) {
         layers[hexId] = layer;
     }
 
-    // $.getJSON("/aircraft/" + hexId + "/location", addLayer);
-    $.getJSON("/aircraft/" + hexId + "/path", addLayer);
+    $.getJSON("/aircraft/" + hexId + "/location", function(data) {
+        return addLayer(pointLayers, data);
+    });
+
+    $.getJSON("/aircraft/" + hexId + "/path", function(data) {
+        return addLayer(trackLayers, data);
+    });
 }
 
 
@@ -45,9 +62,10 @@ function updateAircraft(hexId) {
         var seenAircraft = data.aircraft.map(function(x) {return x.id})
           , unseenAircraft = [];
 
-        for (var key in layers) {
+        for (var key in pointLayers) {
             if (seenAircraft.indexOf(key) == -1) {
-                map.removeLayer(layers[key]);
+                map.removeLayer(pointLayers[key]);
+                map.removeLayer(trackLayers[key]);
             }
         }
 
