@@ -1,5 +1,7 @@
 from sigpoll.parser import import_sbs
 import outpost
+
+from django.conf import settings
 import django
 
 import socket
@@ -24,7 +26,9 @@ def lines(s):
 
 def daemon():
     django.setup()
-    outpost.sync(host='localhost', port=2017)
+    if settings.OUTPOST_ENABLE:
+        outpost.sync(host=settings.OUTPOST_SERVER, port=settings.OUTPOST_PORT)
+
     for line in lines(s):
         print("Loaded: ", *import_sbs(line, dedupe=True))
     s.close()
