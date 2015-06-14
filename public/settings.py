@@ -77,3 +77,6 @@ STATIC_URL = '/static/'
 OUTPOST_SERVER = "localhost"
 OUTPOST_PORT = 30010
 OUTPOST_ENABLE = True
+
+SBS_SERVER = 'leliel.local'
+SBS_PORT = 30006
