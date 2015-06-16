@@ -28,5 +28,5 @@ def daemon():
 
     for line in lines(s):
         loaded = import_sbs(line, dedupe=True)
-        print("Loaded: ", *loaded) if loaded else None
+        print("Loaded: ", *(repr(x) for x in loaded)) if loaded else None
     s.close()
