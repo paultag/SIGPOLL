@@ -1,5 +1,5 @@
 from django.db import models
-from outpost.models import SyncableModel
+from outpost import SyncableModel
 import datetime as dt
 
 
@@ -196,7 +196,7 @@ class Aircraft(models.Model):
 
     @classmethod
     def active(self):
-        minute_ago = dt.datetime.now() - dt.timedelta(seconds=30)
+        minute_ago = dt.datetime.now(dt.timezone.utc) - dt.timedelta(seconds=30)
         return Aircraft.objects.filter(
             locations__when__gte=minute_ago
         ).distinct()

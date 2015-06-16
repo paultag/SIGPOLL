@@ -12,7 +12,7 @@ def json_response(data):
 
 
 def aircraft_path(request, transponder):
-    minute_ago = dt.datetime.now() - dt.timedelta(minutes=30)
+    minute_ago = dt.datetime.now(dt.timezone.utc) - dt.timedelta(minutes=30)
     q = LocationReport.objects.filter(aircraft_id=transponder, when__gte=minute_ago)
     return json_response({
         "type": "LineString",
