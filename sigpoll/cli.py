@@ -27,5 +27,6 @@ def daemon():
         outpost.sync(host=settings.OUTPOST_SERVER, port=settings.OUTPOST_PORT)
 
     for line in lines(s):
-        print("Loaded: ", *import_sbs(line, dedupe=True))
+        loaded = import_sbs(line, dedupe=True)
+        print("Loaded: ", *loaded) if loaded else None
     s.close()
